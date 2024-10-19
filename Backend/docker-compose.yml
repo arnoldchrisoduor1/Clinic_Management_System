@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    container_name: my_postgres_db
+    environment:
+      POSTGRES_DB: clinic_db
+      POSTGRES_USER: odicris
+      POSTGRES_PASSWORD: your_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migration:
+    build: 
+      context: .
+      dockerfile: Dockerfile.migration
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: clinic_db
+      POSTGRES_USER: odicris
+      POSTGRES_PASSWORD: your_secure_password
+    volumes:
+      - ./src/db/migrations:/migrations
+
+volumes:
+  postgres_data:
