@@ -1,22 +1,23 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userQueries = require('../db/queries/users');
+const { emailService } = require('../utils/mail_service');
 
 const userService = {
-  signUp: async (email, password, role) => {
-    console.log('Starting signUp process', { email, role });
+  signUp: async (full_name, email, password, role) => {
+    console.log('Starting signUp process', { full_name, email, role });
     try {
       const existingUser = await userQueries.findUserByEmail(email);
       if (existingUser) {
-        console.log('Email already in use:', email);
-        throw new Error('Email already in use');
+        console.log('User with this email already exists:', email);
+        throw new Error('User with this email already exists');
       }
 
       console.log('Hashing password');
       const passwordHash = await bcrypt.hash(password, 10);
       
       console.log('Creating user');
-      const user = await userQueries.createUser(email, passwordHash, role);
+      const user = await userQueries.createUser(full_name, email, passwordHash, role);
       console.log('User created successfully:', user);
 
       console.log('Generating JWT');
@@ -25,6 +26,8 @@ const userService = {
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
       );
+
+      emailService(email, token)
 
       console.log('SignUp process completed successfully');
       return { user, token };

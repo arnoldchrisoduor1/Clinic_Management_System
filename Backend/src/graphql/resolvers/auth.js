@@ -3,8 +3,8 @@ const userService = require('../../services/userService');
 const authResolvers = {
   Mutation: {
     signUp: async (_, { input }) => {
-      const { email, password, role } = input;
-      return await userService.signUp(email, password, role);
+      const { full_name, email, password, role } = input;
+      return await userService.signUp(full_name, email, password, role);
     },
     signIn: async (_, { input }) => {
       const { email, password } = input;
