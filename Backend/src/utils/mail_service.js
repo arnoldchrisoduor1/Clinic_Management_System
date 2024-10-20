@@ -1,36 +1,32 @@
 const nodemailer = require('nodemailer');
+const VERIFICATION_EMAIL_TEMPLATE = require('./emailTemplate.js');
 
-import { VERIFICATION_EMAIL_TEMPLATE } from './emailTemplate.js';
-
-// Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, 
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   }
 });
 
-export const emailService = async(email, token) => {
-    const recepient = [ email ];
+const emailService = async (email, verificationToken) => {
+  const recipient = [email];
 
-    try {
-      const info = await transporter.sendMail({
-        from: '"Arnold Chris" arnoldchris262@gmail.com',
-        to: recepient,
-        subject: "Verify your Email",
-        text: "Some text",
-        html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificatonCode}", token)
-      });
+  try {
+    const info = await transporter.sendMail({
+      from: '"Digital Wilderness" <digitalwilderness9@gmail.com>',
+      to: recipient,
+      subject: "Verify your Email",
+      text: "Please verify your email",
+      html: VERIFICATION_EMAIL_TEMPLATE.replace("{verificationCode}", verificationToken)
+    });
 
-      console.log('Message sent: %s', info.messageId);
-      return info;
-    } catch (error) {
-      console.error('Error sending email:', error);
-      throw error;
-    }
+    console.log('Message sent: %s', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
 };
 
 module.exports = emailService;

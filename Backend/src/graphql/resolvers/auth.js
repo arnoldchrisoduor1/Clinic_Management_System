@@ -4,6 +4,7 @@ const authResolvers = {
   Mutation: {
     signUp: async (_, { input }) => {
       const { full_name, email, password, role } = input;
+      console.log("Mutation:", role);
       return await userService.signUp(full_name, email, password, role);
     },
     signIn: async (_, { input }) => {

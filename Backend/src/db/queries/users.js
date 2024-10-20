@@ -1,14 +1,14 @@
 const db = require('../../config/database');
 
 const userQueries = {
-    createUser: async (full_name, email, passwordHash, role) => {
-        console.log("Function: createUser", {full_name, email, role });
+    createUser: async (full_name, email, passwordHash, role, verificationToken, verificationTokenExpiresAt) => {
+        console.log("Function: createUser", {full_name, email, role,  verificationTokenExpiresAt});
         const query = `
-        INSERT INTO users (full_name, email, password_hash, user_role)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, full_name, email, user_role AS role
+        INSERT INTO users (full_name, email, password_hash, user_role, verificationToken, verificationTokenExpiresAt)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id, full_name, email, user_role AS role, verificationToken
         `;
-        const values = [full_name, email, passwordHash, role];
+        const values = [full_name, email, passwordHash, role, verificationToken, verificationTokenExpiresAt];
         try {
             const result = await db.query(query, values);
             console.log("createUser result:", result.rows[0]);

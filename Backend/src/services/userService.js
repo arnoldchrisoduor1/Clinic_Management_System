@@ -1,38 +1,64 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const userQueries = require('../db/queries/users');
-const { emailService } = require('../utils/mail_service');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const userQueries = require("../db/queries/users");
+const emailService = require("../utils/mail_service");
 
 const userService = {
   signUp: async (full_name, email, password, role) => {
-    console.log('Starting signUp process', { full_name, email, role });
+    console.log("Starting signUp process", { full_name, email, role });
     try {
       const existingUser = await userQueries.findUserByEmail(email);
       if (existingUser) {
-        console.log('User with this email already exists:', email);
-        throw new Error('User with this email already exists');
+        console.log("User with this email already exists:", email);
+        throw new Error("User with this email already exists");
       }
 
-      console.log('Hashing password');
+      console.log("Hashing password");
       const passwordHash = await bcrypt.hash(password, 10);
       
-      console.log('Creating user');
-      const user = await userQueries.createUser(full_name, email, passwordHash, role);
-      console.log('User created successfully:', user);
-
-      console.log('Generating JWT');
-      const token = jwt.sign(
-        { userId: user.id },
-        process.env.JWT_SECRET,
-        { expiresIn: '1d' }
+      
+      const verificationToken = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+      
+      const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours till expiry.
+      
+      console.log("Creating user");
+      const user = await userQueries.createUser(
+        full_name,
+        email,
+        passwordHash,
+        role,
+        verificationToken,
+        verificationTokenExpiresAt
       );
 
-      emailService(email, token)
+      console.log("Generating JWT");
 
-      console.log('SignUp process completed successfully');
+      const generateToken = (userId) => {
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+          expiresIn: '7d',
+        });
+        return token
+      }
+
+      token = generateToken(user.id);
+
+      console.log("User created successfully:", user);
+
+      try {
+        await emailService(email, verificationToken);
+        console.log("Email sent successfully");
+      } catch (error) {
+        console.error('Failed to send email:', error);
+      }
+
+      console.log("SignUp process completed successfully");
+
       return { user, token };
+
     } catch (error) {
-      console.error('Error in signUp process:', error);
+      console.error("Error in signUp process:", error);
       throw error;
     }
   },
@@ -40,26 +66,24 @@ const userService = {
   signIn: async (email, password) => {
     const user = await userQueries.findUserByEmail(email);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     return { user, token };
   },
 
   getUserById: async (userId) => {
     return await userQueries.findUserById(userId);
-  }
+  },
 };
 
 module.exports = userService;
