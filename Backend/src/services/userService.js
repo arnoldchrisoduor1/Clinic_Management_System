@@ -88,9 +88,9 @@ const userService = {
   
       const updatedUser = await userQueries.updateVerifiedUser(
         user.id,
-        true,  // isVerified
-        null,  // verificationToken
-        null   // verificationTokenExpiresAt
+        true,  
+        null,  
+        null   
       );
   
       console.log("Email verified successfully:", updatedUser);
