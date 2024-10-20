@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: clinic_db
       POSTGRES_USER: odicris
-      POSTGRES_PASSWORD: your_secure_password
+      POSTGRES_PASSWORD: odicris9739
     ports:
       - "5432:5432"
     volumes:
@@ -20,7 +20,7 @@ services:
     environment:
       POSTGRES_DB: clinic_db
       POSTGRES_USER: odicris
-      POSTGRES_PASSWORD: your_secure_password
+      POSTGRES_PASSWORD: odicris9739
     volumes:
       - ./src/db/migrations:/migrations
 

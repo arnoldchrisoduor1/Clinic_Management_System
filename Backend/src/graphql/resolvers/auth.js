@@ -11,6 +11,10 @@ const authResolvers = {
       const { email, password } = input;
       return await userService.signIn(email, password);
     },
+    verifyEmail: async (_, { input }) => {
+      const { code } = input;
+      return await userService.verifyEmail(code);
+    }
   },
   Query: {
     me: async (_, __, { userId }) => {

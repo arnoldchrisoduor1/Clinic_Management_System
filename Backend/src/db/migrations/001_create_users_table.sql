@@ -8,7 +8,7 @@ CREATE TABLE users (
     resetPasswordToken VARCHAR(255),
     resetPasswordExpiresAt TIMESTAMP WITH TIME ZONE,
     verificationTokenExpiresAt TIMESTAMP WITH TIME ZONE,
-    verificationToken VARCHAR(255) NOT NULL,
+    verificationToken VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

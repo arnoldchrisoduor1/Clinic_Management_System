@@ -6,10 +6,15 @@ const typeDefs = gql`
     full_name: String!
     email: String!
     role: String!
+    isverified: Boolean!
   }
 
   type AuthPayload {
     token: String!
+    user: User!
+  }
+
+  type VeryfyPayLoad {
     user: User!
   }
 
@@ -25,9 +30,14 @@ const typeDefs = gql`
     password: String!
   }
 
+  input verifyEmailInput {
+    code: Int!
+  }
+
   type Mutation {
     signUp(input: SignUpInput!): AuthPayload!
     signIn(input: SignInInput!): AuthPayload!
+    verifyEmail(input: verifyEmailInput!) : VeryfyPayLoad!
   }
 
   type Query {

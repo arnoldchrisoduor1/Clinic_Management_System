@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userQueries = require("../db/queries/users");
-const emailService = require("../utils/mail_service");
+const { emailService, welcome_email } = require('../utils/mail_service');
+
 
 const userService = {
   signUp: async (full_name, email, password, role) => {
@@ -59,6 +60,53 @@ const userService = {
 
     } catch (error) {
       console.error("Error in signUp process:", error);
+      throw error;
+    }
+  },
+
+  // EMAIL VERIFICATION LOGIC.
+
+  verifyEmail: async (code) => {
+    try {
+      console.log("Starting Email Verification.");
+  
+      const user = await userQueries.findUserByVerificationToken(code);
+  
+      if (!user) {
+        throw new Error("Invalid or expired verification code");
+      }
+  
+      if (user.isVerified) {
+        return { user, message: "Email already verified" };
+      }
+  
+      if (user.verificationTokenExpiresAt < new Date()) {
+        throw new Error("Verification code has expired");
+      }
+
+      console.log("Verification id:", user);
+  
+      const updatedUser = await userQueries.updateVerifiedUser(
+        user.id,
+        true,  // isVerified
+        null,  // verificationToken
+        null   // verificationTokenExpiresAt
+      );
+  
+      console.log("Email verified successfully:", updatedUser);
+
+      try {
+        await welcome_email(user.email);
+        console.log("Welcome Email sent successfully!");
+      } catch(error) {
+        console.error("Failed to send welcome email:", error);
+        throw error;
+      }
+  
+      return { user: updatedUser, message: "Email verified successfully" };
+  
+    } catch (error) {
+      console.error("Error verifying email:", error);
       throw error;
     }
   },
