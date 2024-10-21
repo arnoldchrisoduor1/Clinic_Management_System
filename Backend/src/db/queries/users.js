@@ -108,6 +108,71 @@ const userQueries = {
       throw error;
     }
   },
+
+  forgotPassword: async (resetpasswordtoken, resetpasswordexpiresat, email) => {
+    console.log("Inserting the reset data to db:", resetpasswordtoken);
+    
+    const query = `
+    UPDATE users
+    SET resetpasswordtoken = $1,
+        resetpasswordexpiresat = $2
+      WHERE email = $3
+    `;
+    const values = [resetpasswordtoken, resetpasswordexpiresat, email];
+    
+    try {
+      const result = await db.query(query, values);
+      console.log("Query result:", result);
+      
+      if (result.rowCount === 0) {
+        console.log("No user found with the provided email");
+        throw new Error("User not found or update failed");
+      }
+      
+      console.log("Setting the forgotPasswordTokens:", result.rows[0]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error in forgotPassword", error);
+      throw error;
+    }
+  },
+  
+  findUserByToken: async(token) => {
+    console.log("Finding user by forgotPasswordToken:", token);
+
+    const query=`
+    SELECT id, email, resetPasswordExpiresAt FROM users WHERE resetPasswordToken = $1
+    `;
+    const values = [ token ];
+    try {
+      const result = await db.query(query, values);
+      console.log("Finding user by reset password token:", result.rows[0]);
+      return result.rows[0];
+    } catch(error) {
+      console.error("Error in findingUserByToken", error);
+      throw error;
+    }
+  },
+
+  updatePassword: async(id, passwordHash, resetPasswordToken, resetPasswordExpiresAt) => {
+    console.log("Updatiing the user for change password function");
+    const query = `
+    UPDATE users
+    SET password_hash = $1,
+        resetpasswordtoken = $3,
+        resetpasswordexpiresat = $4
+    WHERE id = $2
+    `;
+    const values = [ passwordHash, id, resetPasswordToken, resetPasswordExpiresAt ]
+    try {
+      const result = await db.query(query, values);
+      console.log("updating password:", result.rows[0]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error in updatePassword", error);
+      throw error;
+    }
+  }
 };
 
 module.exports = userQueries;

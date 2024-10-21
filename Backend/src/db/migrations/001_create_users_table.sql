@@ -5,10 +5,10 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     user_role VARCHAR(50) NOT NULL DEFAULT 'PATIENT',
     isVerified BOOLEAN DEFAULT FALSE,
-    resetPasswordToken VARCHAR(255),
-    resetPasswordExpiresAt TIMESTAMP WITH TIME ZONE,
-    verificationTokenExpiresAt TIMESTAMP WITH TIME ZONE,
-    verificationToken VARCHAR(255),
+    resetpasswordtoken VARCHAR(255),
+    resetpasswordexpiresat TIMESTAMP WITH TIME ZONE,
+    verificationtokenexpiresat TIMESTAMP WITH TIME ZONE,
+    verificationtoken VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

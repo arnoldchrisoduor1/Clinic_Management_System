@@ -34,10 +34,21 @@ const typeDefs = gql`
     code: Int!
   }
 
+  input forgotPasswordInput {
+    email: String!
+  }
+
+  input resetPasswordInput {
+    token: String!
+    password: String!
+  }
+
   type Mutation {
     signUp(input: SignUpInput!): AuthPayload!
     signIn(input: SignInInput!): AuthPayload!
-    verifyEmail(input: verifyEmailInput!) : VeryfyPayLoad!
+    verifyEmail(input: verifyEmailInput!): VeryfyPayLoad!
+    forgotPassword(input: forgotPasswordInput!): String!
+    resetPassword(input: resetPasswordInput!): String!
   }
 
   type Query {

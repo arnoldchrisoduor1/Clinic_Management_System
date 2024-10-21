@@ -1,7 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require('crypto');
 const userQueries = require("../db/queries/users");
-const { emailService, welcome_email } = require('../utils/mail_service');
+const { emailService, welcome_email, forgot_password_email, successfully_reset_email } = require('../utils/mail_service');
 
 
 const userService = {
@@ -132,6 +133,69 @@ const userService = {
   getUserById: async (userId) => {
     return await userQueries.findUserById(userId);
   },
+
+  // FORGOT PASSWORD RESET LOGIC
+
+  forgotPassword: async(email) => {
+    const user = await userQueries.findUserByEmail(email);
+
+    if(!user) {
+      throw new Error("Email address does not exist");
+    }
+
+    // generating reset token
+    console.log("Generating reset token");
+    const resetpasswordtoken = crypto.randomBytes(20).toString("hex");
+
+    // Adding the reset token and the expiry date to the database.
+    console.log("Adding the reset token and the expiry date to database");
+    resetpasswordexpiresat = new Date(Date.now() + 15 * 60 * 1000);
+    await userQueries.forgotPassword( resetpasswordtoken,resetpasswordexpiresat, user.email)
+    console.log("New User:", user);
+
+    await forgot_password_email(user.email, `${process.env.CLIENT_URL}/reset-password/${resetpasswordtoken}`);
+    console.log("Reset Email Sent successfully");
+    return "Reset Email Sent Successfully"
+
+  },
+
+  // RESETTING THE PASSWORD.
+  resetPassword: async(token, password) => {
+    const user = await userQueries.findUserByToken(token);
+
+    console.log("Resetting Password for:", user);
+
+    if(!user) {
+      throw new Error("Invalid or Expired link");
+    }
+
+    if(user.resetPasswordExpiresAt > new Date()) {
+      throw new Error("password reset token expired");
+    }
+
+    // update the password.
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // updating the user
+    await userQueries.updatePassword(
+      user.id,
+      hashedPassword,
+      null,
+      null
+    );
+
+    try {
+      await successfully_reset_email(user.email);
+      console.log("Successfully sent the email");
+    } catch(error) {
+      console.error("Failed to send the email");
+      throw error;
+    }
+
+    console.log("Password resetting process Completed Sucessfully!");
+
+    return "Password Resetting completed successfully"
+  }
 };
 
 module.exports = userService;

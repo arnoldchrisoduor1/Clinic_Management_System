@@ -14,6 +14,14 @@ const authResolvers = {
     verifyEmail: async (_, { input }) => {
       const { code } = input;
       return await userService.verifyEmail(code);
+    },
+    forgotPassword: async(_, { input }) => {
+      const { email } = input;
+      return await userService.forgotPassword(email);
+    },
+    resetPassword: async(_, { input }) => {
+      const { token, password } = input;
+      return await userService.resetPassword(token, password);
     }
   },
   Query: {
