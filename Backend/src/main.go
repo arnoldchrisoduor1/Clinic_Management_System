@@ -18,8 +18,9 @@ import (
 	"github.com/go-chi/cors"
 	_ "github.com/lib/pq"
 	
-	"HealthCareSystem/graphql/generated"
+	// "HealthCareSystem/graphql/generated"
 	"HealthCareSystem/graphql/resolvers"
+	"HealthCareSystem/graphql/generated"
 	"HealthCareSystem/services"
 )
 

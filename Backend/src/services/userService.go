@@ -31,6 +31,7 @@ type User struct {
 	Phone     string    `json:"phone"`
 	Role      UserRole  `json:"role"`
 	IsActive  bool      `json:"isActive"`
+	PasswordHash string `json:"password_hash"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
@@ -129,14 +130,13 @@ func (s *UserService) GetUserByID(ctx context.Context, id int) (*User, error) {
 // GetUserByEmail retrieves a user by email
 func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	var user User
-	var passwordHash string // we'll ignore this
 	err := s.db.QueryRowContext(ctx,
 		`SELECT * FROM get_user_by_email($1)`,
 		email,
 	).Scan(
 		&user.ID,
 		&user.Username,
-		&passwordHash,
+		&user.PasswordHash,
 		&user.Email,
 		&user.Phone,
 		&user.Role,
@@ -257,7 +257,7 @@ func (s *UserService) DeleteUser(ctx context.Context, id int) (bool, error) {
 }
 
 // UserExists checks if a user exists by username or email
-func (s *UserService) UserExists(ctx context.Context, username, email string) (bool, error) {
+func (s *UserService) UserExists(ctx context.Context, username string, email string) (bool, error) {
 	var exists bool
 	err := s.db.QueryRowContext(ctx,
 		`SELECT user_exists($1, $2)`,

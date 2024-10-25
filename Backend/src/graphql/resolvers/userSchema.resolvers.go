@@ -8,52 +8,68 @@ import (
 	"HealthCareSystem/graphql/generated"
 	"HealthCareSystem/graphql/model"
 	"HealthCareSystem/services"
+	"HealthCareSystem/utils"
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
-
 func NewResolver(userService *services.UserService) *Resolver {
-    return &Resolver{
-        userService: userService,
-    }
-}
-
-// HashPassword hashes the given password
-func HashPassword(password string) (string, error) {
-    bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-    return string(bytes), err
+	return &Resolver{
+		userService: userService,
+	}
 }
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*services.User, error) {
-	
 	// Hash the password
-    passwordHash, err := HashPassword(input.Password)
-    if err != nil {
-        return nil, fmt.Errorf("error hashing password: %v", err)
-    }
+	passwordHash, err := utils.HashPassword(input.Password)
+	if err != nil {
+		return nil, fmt.Errorf("error hashing password: %v", err)
+	}
 
 	// Prepare user input
-    userInput := services.UserInput{
-        Username:    input.Username,
-        PasswordHash: passwordHash,
-        Email:       input.Email,
-        Phone:       input.Phone,
-        Role:        services.UserRole(input.Role),
-    }
+	userInput := services.UserInput{
+		Username:     input.Username,
+		PasswordHash: passwordHash,
+		Email:        input.Email,
+		Phone:        input.Phone,
+		Role:         services.UserRole(input.Role),
+	}
 
 	// Call the user service to create the user
-    user, err := r.userService.CreateUser(ctx, userInput)
-    if err != nil {
-        return nil, fmt.Errorf("error creating user: %v", err)
-    }
+	user, err := r.userService.CreateUser(ctx, userInput)
+	if err != nil {
+		return nil, fmt.Errorf("error creating user: %v", err)
+	}
 
-    return user, nil
+	return user, err
+}
+
+// SignInUser is the resolver for the signInUser field.
+func (r *mutationResolver) SignInUser(ctx context.Context, input model.SignInInput) (*services.User, error) {
+		 user, err := r.userService.GetUserByEmail(ctx, input.Email)
+		 if err != nil {
+		 	return nil, fmt.Errorf("errogettingUserByEmail: %v", err)
+		 } else {
+		 	println("Successfully got user by email")
+		 }
+
+		// Checking for password
+		 println("Checking passwordmatch")
+
+		 fmt.Printf("Hashed password: %v\n", user.PasswordHash)
+		 fmt.Printf("user password: %v\n", input.Password)
+		 os.Stdout.Sync()
+
+		 err = utils.CheckPassword(input.Password, user.PasswordHash)
+		 if err!= nil {
+		 	return nil, err
+		 } else {
+		 	return user, err
+		 }
 }
 
 // UpdateUser is the resolver for the updateUser field.
@@ -70,19 +86,22 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input serv
 	if err != nil {
 		return nil, fmt.Errorf("failed to update user: %v", err)
 	}
-	return user, nil
+	return user, err
 }
 
 // UpdatePassword is the resolver for the updatePassword field.
 func (r *mutationResolver) UpdatePassword(ctx context.Context, id string, password string) (bool, error) {
 	// Hash the password
 
-    passwordHash, err := HashPassword(password)
-    if err != nil {
-        return false, fmt.Errorf("error hashing password: %v", err)
-    }
+	passwordHash, err := utils.HashPassword(password)
+	if err != nil {
+		return false, fmt.Errorf("error hashing password: %v", err)
+	}
 
 	userId, err := strconv.Atoi(id)
+	if err != nil {
+		return false, fmt.Errorf("failed converting id to number: %v", err)
+	}
 
 	updated, err := r.userService.UpdatePassword(ctx, userId, passwordHash)
 
@@ -95,52 +114,84 @@ func (r *mutationResolver) UpdatePassword(ctx context.Context, id string, passwo
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteUser - deleteUser"))
+	// TODO: Add auth middleware to confirm user.
+	userId, err := strconv.Atoi(id)
+	if err != nil {
+		return false, fmt.Errorf("error converting id to int type: %v", err)
+	}
+
+	deleted, err := r.userService.DeleteUser(ctx, userId)
+
+	return deleted, err
 }
 
-// User is the resolver for the user field.
+// Getting a user by Id.
 func (r *queryResolver) User(ctx context.Context, id string) (*services.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	userId, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, fmt.Errorf("error converting to string: %v", err)
+	}
+
+	user, err := r.userService.GetUserByID(ctx, userId)
+
+	if err != nil {
+		return nil, fmt.Errorf("error gettuserbyid: %v", err)
+	}
+
+	return user, err
 }
 
-// UserByEmail is the resolver for the userByEmail field.
+// Retrieving email by user
 func (r *queryResolver) UserByEmail(ctx context.Context, email string) (*services.User, error) {
-	panic(fmt.Errorf("not implemented: UserByEmail - userByEmail"))
+	user, err := r.userService.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, fmt.Errorf("error gettinguserbyemail: %v", err)
+	}
+
+	return user, err
 }
 
-// Users is the resolver for the users field.
+// Getting all the users
 func (r *queryResolver) Users(ctx context.Context, limit *int, offset *int) ([]*services.User, error) {
 	limitValue := 10
-    offsetValue := 0
-    
-    if limit != nil {
-        limitValue = *limit
-    }
-    if offset != nil {
-        offsetValue = *offset
-    }
+	offsetValue := 0
 
-    // Call the GetAllUsers method from UserService
-    users, err := r.userService.GetAllUsers(ctx, limitValue, offsetValue)
-    if err != nil {
+	if limit != nil {
+		limitValue = *limit
+	}
+	if offset != nil {
+		offsetValue = *offset
+	}
+
+	// Call the GetAllUsers method from UserService
+	users, err := r.userService.GetAllUsers(ctx, limitValue, offsetValue)
+	if err != nil {
 		log.Printf("Error fetching users: %v", err)
-        return nil, fmt.Errorf("error fetching users: %v", err)
-    }
+		return nil, fmt.Errorf("error fetching users: %v", err)
+	}
 
 	log.Printf("Fetched users: %+v", users)
 
-    return users, nil
+	return users, err
 	// panic(fmt.Errorf("not implemented: Users - users"))
 }
 
-// UsersCount is the resolver for the usersCount field.
+// Getting the cont of all the users
 func (r *queryResolver) UsersCount(ctx context.Context) (int, error) {
-	panic(fmt.Errorf("not implemented: UsersCount - usersCount"))
+	count, err := r.userService.GetUsersCount(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error gettingusercount: %v", err)
+	}
+
+	return count, err
 }
 
 // ID is the resolver for the id field.
 func (r *userResolver) ID(ctx context.Context, obj *services.User) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - id"))
+	if obj == nil {
+		return "", fmt.Errorf("user object is nil")
+	}
+	return strconv.Itoa(obj.ID), nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
@@ -155,3 +206,21 @@ func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func NewResolver(userService *services.UserService) *Resolver {
+    return &Resolver{
+        userService: userService,
+    }
+}
+func HashPassword(password string) (string, error) {
+    bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    return string(bytes), err
+}
+*/

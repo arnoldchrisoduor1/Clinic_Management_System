@@ -41,7 +41,7 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT 
-        id, username, email, phone, role, is_active, created_at, updated_at
+        users.id, users.username, users.email, users.phone, users.role, users.is_active, users.created_at, users.updated_at
     FROM users 
     WHERE users.id = p_id;
 END;
@@ -62,7 +62,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM users WHERE email = p_email;
+    SELECT * FROM users WHERE users.email = p_email;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -81,7 +81,7 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT * FROM users WHERE username = p_username;
+    SELECT * FROM users WHERE users.username = p_username;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -130,15 +130,15 @@ CREATE OR REPLACE FUNCTION update_user(
 ) AS $$
 BEGIN
     RETURN QUERY
-    UPDATE users
+    UPDATE users u
     SET 
-        username = COALESCE(p_username, username),
-        email = COALESCE(p_email, email),
-        phone = COALESCE(p_phone, phone),
-        role = COALESCE(p_role, role),
-        is_active = COALESCE(p_is_active, is_active)
-    WHERE users.id = p_id
-    RETURNING id, username, email, phone, role, is_active, created_at, updated_at;
+        username = COALESCE(p_username, u.username),
+        email = COALESCE(p_email, u.email),
+        phone = COALESCE(p_phone, u.phone),
+        role = COALESCE(p_role, u.role),
+        is_active = COALESCE(p_is_active, u.is_active)
+    WHERE u.id = p_id
+    RETURNING u.id, u.username, u.email, u.phone, u.role, u.is_active, u.created_at, u.updated_at;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -152,7 +152,7 @@ DECLARE
 BEGIN
     UPDATE users
     SET password_hash = p_password_hash
-    WHERE id = p_id;
+    WHERE users.id = p_id;
     
     GET DIAGNOSTICS rows_updated = ROW_COUNT;
     RETURN rows_updated > 0;
@@ -167,7 +167,7 @@ DECLARE
 BEGIN
     WITH deleted AS (
         DELETE FROM users
-        WHERE id = p_id
+        WHERE users.id = p_id
         RETURNING *
     )
     SELECT COUNT(*) INTO rows_deleted FROM deleted;
