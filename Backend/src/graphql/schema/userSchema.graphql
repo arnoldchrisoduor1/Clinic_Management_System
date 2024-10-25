@@ -1,0 +1,53 @@
+scalar Time
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  phone: String!
+  role: UserRole!
+  isActive: Boolean!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  phone: String!
+  role: UserRole!
+  password: String!
+}
+
+input UpdateUserInput {
+  username: String
+  email: String
+  phone: String
+  role: UserRole
+  isActive: Boolean
+}
+
+enum UserRole {
+  admin
+  patient
+  doctor
+  nurse
+  pharmacist
+  supplier
+  delivery
+  procurement
+}
+
+type Query {
+  user(id: ID!): User
+  userByEmail(email: String!): User
+  users(limit: Int = 10, offset: Int = 0): [User!]!
+  usersCount: Int!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  updatePassword(id: ID!, password: String!): Boolean!
+  deleteUser(id: ID!): Boolean!
+}
