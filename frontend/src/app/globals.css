@@ -15,6 +15,11 @@
     --foreground: #ededed;
   }
 } */
+ @layer utilities {
+  .curved-rectangle {
+    clip-path: ellipse(100% 50%);
+  }
+ }
 
 @font-face {
   font-family: 'Merienda';

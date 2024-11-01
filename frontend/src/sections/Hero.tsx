@@ -2,7 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 
 const Hero = () => {
   return (
-    <section className="container mt-20 flex items-center justify-center max-h-screen">
+    <section className="container mt-32 md:mt-48 flex items-center justify-center max-h-screen">
       <div className="flex flex-col items-center justify-center">
         <div className="text-6xl text-center">
           <h1 className="">

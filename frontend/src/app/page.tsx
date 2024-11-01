@@ -6,11 +6,12 @@ import Features from "@/sections/Features";
 import Footer from "@/sections/Footer";
 import Testimonials from "@/sections/Testimonials";
 import Pricing from "@/sections/Pricing";
+import CallToAction from "@/sections/CallToAction";
 
 export default function Home() {
   return (
     <>
-    <div className="h-[450px] bg-cover bg-no-repeat bg-center relative"
+    <div className="h-[60vh] bg-cover bg-no-repeat bg-center relative"
     style={{
       backgroundImage: `url(${bg.src})`
     }}
@@ -22,6 +23,7 @@ export default function Home() {
     <Pricing />
     {/* <Features /> */}
     <Testimonials />
+    <CallToAction />
     <Footer/>
     </>
   );
