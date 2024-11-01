@@ -37,7 +37,7 @@ export const Header = () => {
     >
       <div className="flex items-center justify-center fixed left-1/2 transform -translate-x-1/2 top-5 sm:w-[85%] md:w-[85%] lg:w-[65%] xl:w-[55%] m-auto z-10 bg-white bg-opacity-50 backdrop-blur-md rounded-full shadow-lg">
         <div className="my-2 md:mr-3 px-2 flex items-center justify-center sm:mr-2 font-bold">
-          MEDICARE
+          AIMEDICALS
         </div>
 
         {/* Main Navbar - Hidden on small screens */}
