@@ -1,15 +1,33 @@
+"use client";
+import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
+import {  motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 
 const Hero = () => {
+
+  const [ ref1, inView1 ] = useInView({ threshold: 0.1 });
+  const [ ref2, inView2 ] = useInView({ threshold: 0.1 });
+
   return (
-    <section className="container mt-32 md:mt-48 flex items-center justify-center max-h-screen">
+    <section className="container sm:mt-32 md:mt-56 lg:mt-32 flex items-center justify-center max-h-screen">
       <div className="flex flex-col items-center justify-center">
-        <div className="text-6xl text-center">
+        <motion.div className="text-6xl text-center"
+        ref={ref1}
+        initial={{ opacity: 0, y:30 }}
+        animate={inView1 ? { opacity: 1, y:0 }: {}}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <h1 className="">
             Transforming the <span className="font-merienda">Medical</span> <br /> <span className="font-dancingsemibold">Industry</span> with AI
           </h1>
-        </div>
-        <div className="border border-gray-400 rounded-full mt-10">
+        </motion.div>
+        <motion.div className="border border-gray-400 rounded-full mt-10"
+        ref={ref2}
+        initial={{ opacity: 0, y: 30 }}
+        animate={inView2 ? { opacity: 1, y: 0 }: {}}
+        transition={{ duration: 0.9, ease: "easeOut" }}
+        >
           <input
             type="email"
             placeholder="Enter Email"
@@ -21,7 +39,7 @@ const Hero = () => {
               <ArrowUpRight size={17} />
             </div>
           </button>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

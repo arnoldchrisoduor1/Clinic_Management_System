@@ -16,13 +16,15 @@ const config: Config = {
       screens: {
         sm: "375px",
         md: "768px",
-        lg: "1200px",
+        lg: "1024px",
+        xl: "1280px",
       },
     },
     screens: {
       sm: "375px",
       md: "768px",
-      lg: "1200px",
+      lg: "1024px",
+      xl: "1280px",
     },
     extend: {
       fontFamily: {
