@@ -11,7 +11,7 @@ import CallToAction from "@/sections/CallToAction";
 export default function Home() {
   return (
     <>
-    <div className="sm:h-[85vh] md:h-[60vh]  lg:h-[70vh] bg-cover bg-no-repeat bg-center relative"
+    <div className="sm:h-[85vh] md:h-[60vh] lg:h-[70vh] xl:h-[80vh] bg-cover bg-no-repeat bg-center relative"
     style={{
       backgroundImage: `url(${bg.src})`
     }}
