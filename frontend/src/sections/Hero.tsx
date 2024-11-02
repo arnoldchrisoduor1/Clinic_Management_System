@@ -10,7 +10,7 @@ const Hero = () => {
   const [ ref2, inView2 ] = useInView({ threshold: 0.1 });
 
   return (
-    <section className="container sm:mt-32 md:mt-56 lg:mt-32 xl:mt-56 flex items-center justify-center max-h-screen">
+    <section className="container sm:mt-32 md:mt-56 lg:mt-32 xl:mt-48 flex items-center justify-center max-h-screen">
       <div className="flex flex-col items-center justify-center">
         <motion.div className="text-6xl text-center"
         ref={ref1}

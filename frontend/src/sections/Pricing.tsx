@@ -42,13 +42,13 @@ const Pricing = () => {
           </div>
           <div>
             <ul className="lg:mb-6 md:py-10">
-            <li className="flex flex-row my-3 md:my-6 md:text-2xl">
+            <li className="flex flex-row my-3 md:my-6 md:text-2xl lg:text-xl">
                 <CircleCheck size={30} className="mr-1 text-green-600" /> Local Data storage 
               </li>
-              <li className="flex flex-row my-3 md:my-6 md:text-2xl">
+              <li className="flex flex-row my-3 md:my-6 md:text-2xl lg:text-xl">
                 <CircleCheck size={30} className="mr-1 text-green-600" /> Unlimited Security updates.
               </li>
-              <li className="flex flex-row my-3 md:my-6 md:text-2xl">
+              <li className="flex flex-row my-3 md:my-6 md:text-2xl lg:text-xl">
                 <CircleCheck size={30} className="mr-1 text-green-600" /> Automated data input system with *AI.
               </li>
             </ul>
@@ -77,7 +77,7 @@ const Pricing = () => {
             </div>
           </div>
           <div>
-            <ul className="lg:my-6 md:py-10 md:text-2xl">
+            <ul className="lg:my-6 md:py-10 md:text-2xl lg:text-xl">
               <li className="flex flex-row my-3 md:my-6">
                 <CircleCheck size={30} className="mr-1 text-green-600 " /> Local and Cloud Data storage 
               </li>
@@ -116,7 +116,7 @@ const Pricing = () => {
             </div>
           </div>
           <div>
-          <ul className="my-6 md:my-10 md:text-2xl">
+          <ul className="my-6 md:my-10 md:text-2xl lg:text-xl">
           <li className="flex flex-row my-3 md:my-6">
                 <CircleCheck size={30} className="mr-1 text-green-600" /> Local and Cloud Data storage 
               </li>
