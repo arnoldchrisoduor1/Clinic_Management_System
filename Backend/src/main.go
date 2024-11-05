@@ -100,7 +100,7 @@ func setupRouter() *chi.Mux {
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:*"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Apollo-Require-Preflight"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))

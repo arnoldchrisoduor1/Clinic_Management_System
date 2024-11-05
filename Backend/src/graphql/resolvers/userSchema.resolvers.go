@@ -28,6 +28,8 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 	passwordHash, err := utils.HashPassword(input.Password)
 	if err != nil {
 		return nil, fmt.Errorf("error hashing password: %v", err)
+	} else {
+		println("CreateUser - password hashed successfully")
 	}
 
 	// Prepare user input
@@ -42,7 +44,10 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 	// Call the user service to create the user
 	user, err := r.userService.CreateUser(ctx, userInput)
 	if err != nil {
+		fmt.Printf("Error creating user - userService: %v", err)
 		return nil, fmt.Errorf("error creating user: %v", err)
+	} else {
+		println("User created sucessfully - userService")
 	}
 
 	return user, err
@@ -54,7 +59,7 @@ func (r *mutationResolver) SignInUser(ctx context.Context, input model.SignInInp
 		 if err != nil {
 		 	return nil, fmt.Errorf("errogettingUserByEmail: %v", err)
 		 } else {
-		 	println("Successfully got user by email")
+		 	println("Successfully got user by email")     
 		 }
 
 		// Checking for password

@@ -11,7 +11,7 @@ const Pricing = () => {
   const [ ref3, inView3 ] = useInView({threshold: 0.1});
 
   return (
-    <section className="bg-customGray py-20">
+    <section className="bg-customGray py-20" id="pricing">
         <h2 className="text-5xl md:text-6xl text-center text-black tracking-tighter font-medium">
         Pricing
       </h2>
@@ -49,7 +49,7 @@ const Pricing = () => {
                 <CircleCheck size={30} className="mr-1 text-green-600" /> Unlimited Security updates.
               </li>
               <li className="flex flex-row my-3 md:my-6 md:text-2xl lg:text-xl">
-                <CircleCheck size={30} className="mr-1 text-green-600" /> Automated data input system with *AI.
+                <CircleCheck size={40} className="mr-1 text-green-600" /> Automated data input system with *AI.
               </li>
             </ul>
           </div>
@@ -82,10 +82,10 @@ const Pricing = () => {
                 <CircleCheck size={30} className="mr-1 text-green-600 " /> Local and Cloud Data storage 
               </li>
               <li className="flex flex-row my-3 md:my-6">
-                <CircleCheck size={30} className="mr-1 text-green-600 " /> Automated Data Input System with *AI
+                <CircleCheck size={40} className="mr-1 text-green-600 " /> Automated Data Input System with *AI
               </li>
               <li className="flex flex-row my-3 md:my-6">
-                <CircleCheck size={30} className="mr-1 text-green-600 " /> Real-Time Data Ingestion and Processing
+                <CircleCheck size={40} className="mr-1 text-green-600 " /> Real-Time Data Ingestion and Processing
               </li>
               <li className="flex flex-row my-3 md:my-6">
                 <CircleCheck size={30} className="mr-1 text-green-600 " /> Real Time Disease Prediction.
@@ -124,10 +124,10 @@ const Pricing = () => {
                 <CircleCheck size={30} className="mr-1 text-green-600" /> Unlimited Security updates.
               </li>
               <li className="flex flex-row my-3 md:my-6">
-                <CircleCheck size={30} className="mr-1 text-green-600" /> Automated Data Input System with *AI
+                <CircleCheck size={40} className="mr-1 text-green-600" /> Automated Data Input System with *AI
               </li>
               <li className="flex flex-row my-3 md:my-6">
-                <CircleCheck size={30} className="mr-1 text-green-600" /> Real-Time Data Ingestion and Processing
+                <CircleCheck size={40} className="mr-1 text-green-600" /> Real-Time Data Ingestion and Processing
               </li>
               <li className="flex flex-row my-3 md:my-6">
                 <CircleCheck size={30} className="mr-1 text-green-600" /> Real Time Disease Prediction.

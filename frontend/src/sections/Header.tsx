@@ -14,7 +14,7 @@ export const Header = () => {
   };
 
   const sidebarVariants = {
-    hidden: { x: "100%" }, // Start off-screen
+    hidden: { x: "100%" },
     visible: { x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
     exit: { x: "100%", transition: { ease: "easeInOut", duration: 0.3 } },
   };
@@ -29,24 +29,23 @@ export const Header = () => {
   };
 
   return (
-    <header
+    <header id="home"
       className="h-[1px] w-full bg-cover bg-no-repeat bg-center"
       style={{
         backgroundImage: `url(${bg.src})`,
       }}
     >
-      <div className="flex items-center justify-center fixed left-1/2 transform -translate-x-1/2 top-5 sm:w-[85%] md:w-[85%] lg:w-[65%] xl:w-[55%] m-auto z-10 bg-white bg-opacity-50 backdrop-blur-md rounded-full shadow-lg">
+      <div className="flex items-center justify-center fixed left-1/2 transform -translate-x-1/2 top-5 sm:w-[90%] md:w-[85%] lg:w-[65%] xl:w-[55%] m-auto z-10 bg-white bg-opacity-50 backdrop-blur-md rounded-full shadow-lg sm:py-1">
         <div className="my-2 md:mr-3 px-2 flex items-center justify-center sm:mr-2 font-bold">
           AIMEDICALS
         </div>
 
-        {/* Main Navbar - Hidden on small screens */}
         <div className="max-sm:hidden sm:flex border border-gray-400 rounded-full my-4 flex items-center justify-center lg:gap-20">
           <nav className="sm:hidden md:flex flex-row gap-10 md:gap-5">
-            {["home", "sponsors", "pricing", "developers"].map((tab) => (
+            {["home", "pricing", "testimonials", "contacts"].map((tab) => (
               <a
                 key={tab}
-                href="#"
+                href={`#${tab}`}  // Link to the section id
                 className={`hover:bg-gray-100 px-3 py-1 rounded-full transition duration-300 ease-in-out ${
                   activeTab === tab ? "bg-black text-white" : ""
                 }`}
@@ -62,7 +61,6 @@ export const Header = () => {
           <button>Join Waitlist</button>
         </div>
 
-        {/* Mobile Menu Button - Only visible on small screens */}
         <button
           className="sm:block md:hidden ml-4 p-2 text-black"
           onClick={() => setSidebarOpen(true)}
@@ -71,11 +69,9 @@ export const Header = () => {
         </button>
       </div>
 
-      {/* Sidebar - Only visible on small screens */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div className="lg:hidden fixed inset-0 z-20 flex" initial="hidden" animate="visible" exit="exit">
-            {/* Overlay */}
             <motion.div
               className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
               onClick={() => setSidebarOpen(false)}
@@ -85,9 +81,8 @@ export const Header = () => {
               transition={{ duration: 0.3 }}
             ></motion.div>
 
-            {/* Sidebar Content */}
             <motion.div
-              className="fixed top-0 right-0 h-full w-2/4 max-w-xs p-6 shadow-lg z-30"
+              className="fixed top-0 right-0 h-full w-3/4 max-w-xs p-6 shadow-lg z-30"
               style={{
                 backgroundImage: `url(${bg.src})`,
               }}
@@ -97,10 +92,10 @@ export const Header = () => {
                 <X />
               </button>
               <nav className="flex flex-col gap-4">
-                {["home", "sponsors", "pricing", "developers"].map((tab, index) => (
+                {["home", "pricing", "testimonials", "contacts"].map((tab, index) => (
                   <motion.a
                     key={tab}
-                    href="#"
+                    href={`#${tab}`}  // Link to the section id
                     className={`px-3 py-2 rounded transition duration-300 ease-in-out ${
                       activeTab === tab ? "bg-black text-white" : "hover:bg-gray-200"
                     }`}

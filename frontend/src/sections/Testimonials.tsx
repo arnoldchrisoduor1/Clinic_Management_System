@@ -8,35 +8,36 @@ import avatar3 from "../../public/assets/avatar-3.png"
 import avatar4 from "../../public/assets/avatar-4.png"
 
 const testimonials = [
-    {
-      text: "“This product has completely transformed how I manage my patients and orders”",
-      name: "Sophia Perez",
-      title: "Director @ Quantum",
-      avatarImg: avatar1,
-    },
-    {
-      text: "“These AI tools have completely revolutionized our Medicalstrategy overnight”",
-      name: "Jamie Lee",
-      title: "Founder @ Pulse",
-      avatarImg: avatar2,
-    },
-    {
-      text: "“The user interface is so intuitive and easy to use, it has saved us countless hours”",
-      name: "Alisa Hester",
-      title: "Product @ Innovate",
-      avatarImg: avatar3,
-    },
-    {
-      text: "“Our Hospital's productivity has increased significantly since we started using this tool”",
-      name: "Alec Whitten",
-      title: "CTO @ Tech Solutions",
-      avatarImg: avatar4,
-    },
-  ];
+  {
+    text: "“This platform has significantly improved our workflow and patient care management.”",
+    name: "Olivia Johnson",
+    title: "Chief Operating Officer @ HealthSync",
+    avatarImg: avatar1,
+  },
+  {
+    text: "“The innovative solutions provided by this software have accelerated our service delivery remarkably.”",
+    name: "Brian Smith",
+    title: "Co-Founder @ MedTech Innovations",
+    avatarImg: avatar2,
+  },
+  {
+    text: "“The streamlined design of the application makes it a breeze to navigate, saving us so much time.”",
+    name: "Melissa Brown",
+    title: "Lead Designer @ UserFirst",
+    avatarImg: avatar3,
+  },
+  {
+    text: "“Our clinic's efficiency has soared since we integrated this solution into our operations.”",
+    name: "Jose Martinez",
+    title: "Vice President @ CareSolutions",
+    avatarImg: avatar4,
+  },
+];
+
 
 const Testimonials = () => {
   return (
-    <section className="py-20 md:py-24 bg-black">
+    <section className="py-20 md:py-24 bg-black" id="testimonials">
     <div className="container">
       <h2 className="text-5xl md:text-6xl text-center text-white tracking-tighter font-medium">
         Beyond Expectations
@@ -65,14 +66,16 @@ const Testimonials = () => {
           className="border border-white/15 p-6 md:p-10 rounded-xl bg-[linear-gradient(to_bottom_left,gray,black)] max-w-xs md:max-w-md flex-none text-white"
         >
           <div className="text-lg md:text-2xl tracking-tight">{testimonial.text}</div>
-          <div className="flex items-center gap-3 mt-5">
-            <div className="relative after:content-[''] after:absolute after:inset-0 after:bg-[rgb(91,124,194)] after:mix-blend-soft-light before:content-[''] before:absolute before:inset-0 before:border before:border-white/30 before:z-10 before:rounded-lg">
-              <Image
-                src={testimonial.avatarImg}
+          <div className="flex items-center gap-3 mt-5 self-end">
+            {/* <div className="relative after:content-[''] after:absolute after:inset-0 after:bg-[rgb(91,124,194)] after:mix-blend-soft-light before:content-[''] before:absolute before:inset-0 before:border before:border-white/30 before:z-10 before:rounded-full"> */}
+              <img
+                src={testimonial.avatarImg.src}
+                width={20}
+                height={20}
                 alt={`Avatar for ${testimonial.avatarImg}`}
-                className="h-11 w-11 rounded-lg grayscale"
+                className="h-11 w-11 rounded-full"
               />
-            </div>
+            {/* </div> */}
             <div className="text-white">
               <div>{testimonial.name}</div>
               <div className="text-white/50 text-sm">{testimonial.title}</div>

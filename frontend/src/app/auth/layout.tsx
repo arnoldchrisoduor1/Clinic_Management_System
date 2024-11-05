@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { twMerge } from "tailwind-merge";
-import { ApolloWrapper } from "./ApolloWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Healthcare System",
-  description: "Healthcare management system",
+  title: "Registration",
+  description: "Register for AIMEDICALS",
 };
 
 export default function RootLayout({
@@ -21,7 +20,7 @@ export default function RootLayout({
       <body
         className={twMerge(inter.className, "bg-white text-black antialiased")}
       >
-        <ApolloWrapper>{children}</ApolloWrapper>
+        {children}
       </body>
     </html>
   );

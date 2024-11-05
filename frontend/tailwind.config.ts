@@ -14,14 +14,14 @@ const config: Config = {
         lg: "80px",
       },
       screens: {
-        sm: "375px",
+        sm: "360px",
         md: "768px",
         lg: "1024px",
         xl: "1280px",
       },
     },
     screens: {
-      sm: "375px",
+      sm: "360px",
       md: "768px",
       lg: "1024px",
       xl: "1280px",

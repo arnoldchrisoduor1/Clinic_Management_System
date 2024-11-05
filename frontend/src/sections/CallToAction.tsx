@@ -20,13 +20,13 @@ const CallToAction = () => {
     }
 
   return (
-    <section className="bg-black py-20">
+    <section className="bg-black py-20" id="contacts">
       <div className="bg-customGray curved-rectangle py-10">
         <div className="container flex flex-col align-center justify-center ">
         <h2 className="text-5xl md:text-6xl text-center text-black tracking-tighter font-medium py-5">
           Talk to Us
         </h2>
-          <motion.div className="border border-slate-400 rounded-lg lg:w-full md:max-w-[40rem] self-center"
+          <motion.div className="border border-slate-400 rounded-lg lg:w-full md:max-w-[40rem] self-center sm:w-[90%]"
           ref={ref1}
         initial={{ opacity:0, y:30 }}
         animate={inView1 ? { opacity: 1, y: 0 } : {}}
@@ -35,15 +35,25 @@ const CallToAction = () => {
             {/* will hold the entire thing */}
             <div className='flex flex-end justify-between relative'>
               <motion.div className='absolute p-2 right-0 flex flex-col'>
-                <div className='bg-black md:border p-2 rounded-full self-end cursor-pointer'
+                <motion.div className='bg-black md:border p-2 rounded-full self-end cursor-pointer'
                 onClick={() => contactFunc()}
+                initial={{ y: 0 }}
+          animate={{
+            y: [0, -5, 0]  // Bounce effect (up and down)
+          }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut"
+          }}
                 >{
                   contact == false ?
                   <Contact style={{ color: 'white' }}/>
                   :
                   <X style={{ color: 'white' }}/>
                 }
-                </div>
+                </motion.div>
                 {
                   contact == true ? 
                   <motion.div className='p-2 mt-2 rounded-md'
@@ -66,7 +76,7 @@ const CallToAction = () => {
                 <div className='flex flex-col gap-3 flex-start px-10 py-10 lg:w-1/2 md:w-2/3'>
                     <p className="font-semibold font-merienda">Hello there, my name is: <input type="text" className="bg-transparent placeholder:underline-offset-8 border-none outline-none" placeholder="your name"/></p>
                     <p className="font-semibold font-merienda mb-2">and im looking for ...</p>
-                    <textarea className="border-b border-black bg-transparent outline-none resize-none h-24 w-72"
+                    <textarea className="border-b border-black bg-transparent outline-none resize-none h-24 w-44"
                     defaultValue="small description"
                     onChange={(e) => setText(e.target.value)}
                     >
