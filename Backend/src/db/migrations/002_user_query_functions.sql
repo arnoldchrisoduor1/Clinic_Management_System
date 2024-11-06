@@ -7,6 +7,7 @@ CREATE OR REPLACE FUNCTION create_user(
     p_password_hash VARCHAR(255),
     p_email VARCHAR(255),
     p_phone VARCHAR(20),
+    p_token VARCHAR(255)
     p_role user_role
 ) RETURNS TABLE (
     id INTEGER,
@@ -15,14 +16,15 @@ CREATE OR REPLACE FUNCTION create_user(
     phone VARCHAR(20),
     role user_role,
     is_active BOOLEAN,
+    token VARCHCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
     RETURN QUERY
-    INSERT INTO users (username, password_hash, email, phone, role)
-    VALUES (p_username, p_password_hash, p_email, p_phone, p_role)
-    RETURNING users.id, users.username, users.email, users.phone, users.role, users.is_active, users.created_at, users.updated_at;
+    INSERT INTO users (username, password_hash, email, phone, token, role)
+    VALUES (p_username, p_password_hash, p_email, p_phone, p_token, p_role)
+    RETURNING users.id, users.username, users.email, users.phone, users.role, users.token, users.is_active, users.created_at, users.updated_at;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -35,13 +37,14 @@ RETURNS TABLE (
     phone VARCHAR(20),
     role user_role,
     is_active BOOLEAN,
+    token VARCHCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        users.id, users.username, users.email, users.phone, users.role, users.is_active, users.created_at, users.updated_at
+        users.id, users.username, users.email, users.token, users.phone, users.role, users.is_active, users.created_at, users.updated_at
     FROM users 
     WHERE users.id = p_id;
 END;
@@ -57,6 +60,7 @@ RETURNS TABLE (
     phone VARCHAR(20),
     role user_role,
     is_active BOOLEAN,
+    token VARCHCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ) AS $$
@@ -76,6 +80,7 @@ RETURNS TABLE (
     phone VARCHAR(20),
     role user_role,
     is_active BOOLEAN,
+    token VARCHCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ) AS $$
@@ -96,13 +101,14 @@ CREATE OR REPLACE FUNCTION get_all_users(
     phone VARCHAR(20),
     role user_role,
     is_active BOOLEAN,
+    token VARCHCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        users.id, users.username, users.email, users.phone, users.role, users.is_active, users.created_at, users.updated_at
+        users.id, users.username, users.email, users.token, users.phone, users.role, users.is_active, users.created_at, users.updated_at
     FROM users
     ORDER BY users.id
     LIMIT p_limit
@@ -125,6 +131,7 @@ CREATE OR REPLACE FUNCTION update_user(
     phone VARCHAR(20),
     role user_role,
     is_active BOOLEAN,
+    token VARCHCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
 ) AS $$
@@ -138,7 +145,7 @@ BEGIN
         role = COALESCE(p_role, u.role),
         is_active = COALESCE(p_is_active, u.is_active)
     WHERE u.id = p_id
-    RETURNING u.id, u.username, u.email, u.phone, u.role, u.is_active, u.created_at, u.updated_at;
+    RETURNING u.id, u.username, u.email, u.phone, u.role, u.is_active, u.created_at, u.updated_at u.token;
 END;
 $$ LANGUAGE plpgsql;
 

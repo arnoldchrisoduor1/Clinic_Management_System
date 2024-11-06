@@ -9,6 +9,7 @@ type User {
   isActive: Boolean!
   createdAt: Time!
   updatedAt: Time!
+  token: String
 }
 
 input CreateUserInput {
@@ -17,6 +18,7 @@ input CreateUserInput {
   phone: String!
   role: UserRole!
   password: String!
+  token: String!
 }
 
 input SignInInput {
@@ -30,6 +32,7 @@ input UpdateUserInput {
   phone: String
   role: UserRole
   isActive: Boolean
+  token: String
 }
 
 enum UserRole {
@@ -54,6 +57,6 @@ type Mutation {
   createUser(input: CreateUserInput!): User!
   signInUser(input: SignInInput!): User!
   updateUser(id: ID!, input: UpdateUserInput!): User!
-  updatePassword(id: ID!, password: String!): Boolean!
-  deleteUser(id: ID!): Boolean!
+  updatePassword(id: ID!, password: String!, token: String!): Boolean!
+  deleteUser(id: ID!, token: String!): Boolean!
 }

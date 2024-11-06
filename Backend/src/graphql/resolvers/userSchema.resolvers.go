@@ -8,6 +8,7 @@ import (
 	"HealthCareSystem/graphql/generated"
 	"HealthCareSystem/graphql/model"
 	"HealthCareSystem/services"
+	"HealthCareSystem/middleware"
 	"HealthCareSystem/utils"
 	"context"
 	"fmt"
@@ -15,12 +16,6 @@ import (
 	"os"
 	"strconv"
 )
-
-func NewResolver(userService *services.UserService) *Resolver {
-	return &Resolver{
-		userService: userService,
-	}
-}
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*services.User, error) {
@@ -38,6 +33,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 		PasswordHash: passwordHash,
 		Email:        input.Email,
 		Phone:        input.Phone,
+		Token:        input.Token,
 		Role:         services.UserRole(input.Role),
 	}
 
@@ -47,34 +43,44 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 		fmt.Printf("Error creating user - userService: %v", err)
 		return nil, fmt.Errorf("error creating user: %v", err)
 	} else {
-		println("User created sucessfully - userService")
+		println("User created successfully - userService")
 	}
 
-	return user, err
-}
+	// Generate a token for the new user
+	token, err := middleware.CreateToken(user.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error creating token: %v", err)
+	}
 
+	// Attach the token to the user object
+	user.Token = token
+
+	return user, nil
+}
 // SignInUser is the resolver for the signInUser field.
 func (r *mutationResolver) SignInUser(ctx context.Context, input model.SignInInput) (*services.User, error) {
-		 user, err := r.userService.GetUserByEmail(ctx, input.Email)
-		 if err != nil {
-		 	return nil, fmt.Errorf("errogettingUserByEmail: %v", err)
-		 } else {
-		 	println("Successfully got user by email")     
-		 }
+	user, err := r.userService.GetUserByEmail(ctx, input.Email)
+	if err != nil {
+		return nil, fmt.Errorf("errogettingUserByEmail: %v", err)
+	} else {
+		println("Successfully got user by email")
+	}
 
-		// Checking for password
-		 println("Checking passwordmatch")
+	// Checking for password
+	println("Checking passwordmatch")
 
-		 fmt.Printf("Hashed password: %v\n", user.PasswordHash)
-		 fmt.Printf("user password: %v\n", input.Password)
-		 os.Stdout.Sync()
+	fmt.Printf("Hashed password: %v\n", user.PasswordHash)
+	fmt.Printf("user password: %v\n", input.Password)
+	os.Stdout.Sync()
 
-		 err = utils.CheckPassword(input.Password, user.PasswordHash)
-		 if err!= nil {
-		 	return nil, err
-		 } else {
-		 	return user, err
-		 }
+	err = utils.CheckPassword(input.Password, user.PasswordHash)
+	if err != nil {
+		println("passwords do not match")
+		return nil, err
+	}
+
+	fmt.Printf("passowrds match - singin in ...: %v ", user)
+	return user, err
 }
 
 // UpdateUser is the resolver for the updateUser field.
@@ -95,7 +101,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input serv
 }
 
 // UpdatePassword is the resolver for the updatePassword field.
-func (r *mutationResolver) UpdatePassword(ctx context.Context, id string, password string) (bool, error) {
+func (r *mutationResolver) UpdatePassword(ctx context.Context, id string, password string, token string) (bool, error) {
 	// Hash the password
 
 	passwordHash, err := utils.HashPassword(password)
@@ -117,8 +123,8 @@ func (r *mutationResolver) UpdatePassword(ctx context.Context, id string, passwo
 	return updated, err
 }
 
-// DeleteUser is the resolver for the deleteUser field.
-func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
+// DELETE is the resolver for the deleteUser field.
+func (r *mutationResolver) DeleteUser(ctx context.Context, id string, token string) (bool, error) {
 	// TODO: Add auth middleware to confirm user.
 	userId, err := strconv.Atoi(id)
 	if err != nil {
@@ -199,6 +205,16 @@ func (r *userResolver) ID(ctx context.Context, obj *services.User) (string, erro
 	return strconv.Itoa(obj.ID), nil
 }
 
+// Token is the resolver for the token field.
+func (r *userResolver) Token(ctx context.Context, obj *services.User) (*string, error) {
+	panic(fmt.Errorf("not implemented: Token - token"))
+}
+
+// Token is the resolver for the token field.
+func (r *updateUserInputResolver) Token(ctx context.Context, obj *services.UpdateUserInput, data *string) error {
+	panic(fmt.Errorf("not implemented: Token - token"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
@@ -208,9 +224,15 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
+// UpdateUserInput returns generated.UpdateUserInputResolver implementation.
+func (r *Resolver) UpdateUserInput() generated.UpdateUserInputResolver {
+	return &updateUserInputResolver{r}
+}
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+type updateUserInputResolver struct{ *Resolver }
 
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
@@ -220,12 +242,8 @@ type userResolver struct{ *Resolver }
 //  - You have helper methods in this file. Move them out to keep these resolver files clean.
 /*
 	func NewResolver(userService *services.UserService) *Resolver {
-    return &Resolver{
-        userService: userService,
-    }
-}
-func HashPassword(password string) (string, error) {
-    bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-    return string(bytes), err
+	return &Resolver{
+		userService: userService,
+	}
 }
 */
