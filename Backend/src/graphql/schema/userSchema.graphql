@@ -18,7 +18,6 @@ input CreateUserInput {
   phone: String!
   role: UserRole!
   password: String!
-  token: String!
 }
 
 input SignInInput {
@@ -58,5 +57,5 @@ type Mutation {
   signInUser(input: SignInInput!): User!
   updateUser(id: ID!, input: UpdateUserInput!): User!
   updatePassword(id: ID!, password: String!, token: String!): Boolean!
-  deleteUser(id: ID!, token: String!): Boolean!
+  deleteUser(email: String!, token: String!): Boolean!
 }

@@ -16,12 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
+      <div
         className={twMerge(inter.className, "bg-white text-black antialiased")}
       >
         {children}
-      </body>
-    </html>
+      </div>
   );
 }

@@ -52,7 +52,7 @@ type DirectiveRoot struct {
 type ComplexityRoot struct {
 	Mutation struct {
 		CreateUser     func(childComplexity int, input model.CreateUserInput) int
-		DeleteUser     func(childComplexity int, id string, token string) int
+		DeleteUser     func(childComplexity int, email string, token string) int
 		SignInUser     func(childComplexity int, input model.SignInInput) int
 		UpdatePassword func(childComplexity int, id string, password string, token string) int
 		UpdateUser     func(childComplexity int, id string, input services.UpdateUserInput) int
@@ -83,7 +83,7 @@ type MutationResolver interface {
 	SignInUser(ctx context.Context, input model.SignInInput) (*services.User, error)
 	UpdateUser(ctx context.Context, id string, input services.UpdateUserInput) (*services.User, error)
 	UpdatePassword(ctx context.Context, id string, password string, token string) (bool, error)
-	DeleteUser(ctx context.Context, id string, token string) (bool, error)
+	DeleteUser(ctx context.Context, email string, token string) (bool, error)
 }
 type QueryResolver interface {
 	User(ctx context.Context, id string) (*services.User, error)
@@ -93,8 +93,6 @@ type QueryResolver interface {
 }
 type UserResolver interface {
 	ID(ctx context.Context, obj *services.User) (string, error)
-
-	Token(ctx context.Context, obj *services.User) (*string, error)
 }
 
 type UpdateUserInputResolver interface {
@@ -142,7 +140,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(string), args["token"].(string)), true
+		return e.complexity.Mutation.DeleteUser(childComplexity, args["email"].(string), args["token"].(string)), true
 
 	case "Mutation.signInUser":
 		if e.complexity.Mutation.SignInUser == nil {
@@ -453,7 +451,7 @@ type Mutation {
   signInUser(input: SignInInput!): User!
   updateUser(id: ID!, input: UpdateUserInput!): User!
   updatePassword(id: ID!, password: String!, token: String!): Boolean!
-  deleteUser(id: ID!, token: String!): Boolean!
+  deleteUser(email: String!, token: String!): Boolean!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -497,11 +495,11 @@ func (ec *executionContext) field_Mutation_createUser_argsInput(
 func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_deleteUser_argsID(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_deleteUser_argsEmail(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["id"] = arg0
+	args["email"] = arg0
 	arg1, err := ec.field_Mutation_deleteUser_argsToken(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -509,22 +507,22 @@ func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, 
 	args["token"] = arg1
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_deleteUser_argsID(
+func (ec *executionContext) field_Mutation_deleteUser_argsEmail(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (string, error) {
 	// We won't call the directive if the argument is null.
 	// Set call_argument_directives_with_null to true to call directives
 	// even if the argument is null.
-	_, ok := rawArgs["id"]
+	_, ok := rawArgs["email"]
 	if !ok {
 		var zeroVal string
 		return zeroVal, nil
 	}
 
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+	if tmp, ok := rawArgs["email"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
 	}
 
 	var zeroVal string
@@ -1251,7 +1249,7 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteUser(rctx, fc.Args["id"].(string), fc.Args["token"].(string))
+		return ec.resolvers.Mutation().DeleteUser(rctx, fc.Args["email"].(string), fc.Args["token"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2050,7 +2048,7 @@ func (ec *executionContext) _User_token(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Token(rctx, obj)
+		return obj.Token, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2059,17 +2057,17 @@ func (ec *executionContext) _User_token(ctx context.Context, field graphql.Colle
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_token(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -4303,38 +4301,7 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "token":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._User_token(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._User_token(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5140,6 +5107,16 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 		return graphql.Null
 	}
 	res := graphql.MarshalInt(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
 	return res
 }
 

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	
+
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -21,7 +23,7 @@ func CreateToken(userId int) (string, error) {
 }
 
 // Function to retrieve user ID from token
-func GetUserIDFromToken(tokenString string) (string, error) {
+func GetUserIDFromToken(tokenString string) (int, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -30,13 +32,17 @@ func GetUserIDFromToken(tokenString string) (string, error) {
 	})
 
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userId := claims["userId"].(string)
-		return userId, nil
+		if userId, ok := claims["userId"].(float64); ok {
+			fmt.Printf("got the userid from token: %v", userId)
+			return int(userId), nil
+		}
+		fmt.Printf("userId claim not found or invalid type\n")
+		return 0, errors.New("userId claim missing or invalid")
 	} else {
-		return "", errors.New("invalid token")
+		return 0, fmt.Errorf("error getting id from token: %v", err)
 	}
 }

@@ -1,6 +1,7 @@
 // components/ManageUser.js
 import { gql, useQuery, useMutation } from '@apollo/client';
 import useAuthStore from '../store/authStore';
+import toast from 'react-hot-toast';
 
 // GraphQL Mutations and Queries
 const SIGN_IN_USER = gql`
@@ -139,6 +140,10 @@ const useManageUser = () => {
         variables: { email: "test1@gmail.com" },
     });
 
+
+    // ============================================ HANDLERS ================================
+
+
     // Handlers for user-related actions
     const handleSignIn = async (input) => {
         try {
@@ -151,16 +156,30 @@ const useManageUser = () => {
                     }
                 }
             });
+    
+            // Check for errors in the GraphQL response
+            if (response.errors && response.errors.length > 0) {
+                console.error("Sign in error:", response.errors);
+                toast.error(response.errors[0].message || "Error Signing In");
+                throw new Error(response.errors[0].message); // Rethrow for additional handling if needed
+            }
+    
+            // If no errors, show success toast
             console.log("Sign in response:", response);
+            toast.success("Sign In Successful.");
             return response;
-        } catch (error) {
-            console.error("Sign in error:", error);
-            throw error;
+    
+        } catch (errors) {
+            console.error("Sign in error:", errors);
+            // toast.error("Error Signing In");
+            throw errors;
         }
     };
+    
 
 
     const handleCreateUser = async (input) => {
+        // TODO: Solve for error 422
         try {
             console.log("Creating user with:", input);
             const response = await createUserMutation({
@@ -174,16 +193,35 @@ const useManageUser = () => {
                     }
                 }
             });
-            console.log("Create user response:", response);
+            // checking for errrors in the GraphQL response.
+            if (response.errors && response.errors.length > 0) {
+                console.error("Create user error: ", response.errors);
+                toast.error(response.errors[0].message || "Error Creating Account")
+                throw new Error(response.errors[0].message);
+            }
+
+            // if no errors return success toast.
+            console.log("Create user in response:", response);
+            toast.success("Account Created Successfully");
             return response;
         } catch (error) {
             console.error("Create user error:", error);
+            // toast.error("Errir creating an account.")
             throw error;
         }
     };
 
     const handleUpdateUser = async (id, input) => {
-        await updateUserMutation({ variables: { id, input } });
+        try {
+            console.log("Updating user details with: ", id, input);
+            const response = await updateUserMutation({ variables: { id, input } });
+            console.log("Updated user: ", response);
+            toast.success("Account Updated Successfully");
+            return response;
+        } catch(error) {
+            toast.error("Error Updating Details");
+            throw error;
+        }
     };
 
     return {

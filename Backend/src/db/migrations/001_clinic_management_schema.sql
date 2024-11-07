@@ -26,7 +26,7 @@ CREATE TABLE users (
     phone VARCHAR(20),
     role user_role NOT NULL,
     is_active BOOLEAN DEFAULT true,
-    token VARCHAR(255) NOT NULL,
+    token VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

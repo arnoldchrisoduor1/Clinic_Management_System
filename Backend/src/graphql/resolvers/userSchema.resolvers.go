@@ -7,8 +7,8 @@ package resolvers
 import (
 	"HealthCareSystem/graphql/generated"
 	"HealthCareSystem/graphql/model"
-	"HealthCareSystem/services"
 	"HealthCareSystem/middleware"
+	"HealthCareSystem/services"
 	"HealthCareSystem/utils"
 	"context"
 	"fmt"
@@ -33,7 +33,6 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 		PasswordHash: passwordHash,
 		Email:        input.Email,
 		Phone:        input.Phone,
-		Token:        input.Token,
 		Role:         services.UserRole(input.Role),
 	}
 
@@ -46,24 +45,34 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 		println("User created successfully - userService")
 	}
 
-	// Generate a token for the new user
 	token, err := middleware.CreateToken(user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error creating token: %v", err)
 	}
 
-	// Attach the token to the user object
-	user.Token = token
+	updateTokenInput := services.UpdateUserTokenInput{
+		ID:    user.ID,
+		Token: token,
+	}
 
-	return user, nil
+	// Generate a token for the new user
+
+	// Ading the token to the user.
+	user, err = r.userService.UpdateUserToken(ctx, updateTokenInput)
+	if err != nil {
+		return nil, fmt.Errorf("error adding token to db: %v", err)
+	}
+
+	return user, err
 }
+
 // SignInUser is the resolver for the signInUser field.
 func (r *mutationResolver) SignInUser(ctx context.Context, input model.SignInInput) (*services.User, error) {
 	user, err := r.userService.GetUserByEmail(ctx, input.Email)
 	if err != nil {
 		return nil, fmt.Errorf("errogettingUserByEmail: %v", err)
 	} else {
-		println("Successfully got user by email")
+		fmt.Printf("Successfully got user by email:%v", user)
 	}
 
 	// Checking for password
@@ -79,7 +88,23 @@ func (r *mutationResolver) SignInUser(ctx context.Context, input model.SignInInp
 		return nil, err
 	}
 
-	fmt.Printf("passowrds match - singin in ...: %v ", user)
+	fmt.Printf("passowrds match - updating user token ...: %v ", user)
+
+	token, err := middleware.CreateToken(user.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error creating token: %v", err)
+	}
+
+	updateTokenInput := services.UpdateUserTokenInput{
+		ID:    user.ID,
+		Token: token,
+	}
+
+	user, err = r.userService.UpdateUserToken(ctx, updateTokenInput)
+	if err != nil {
+		return nil, fmt.Errorf("error adding token to db: %v", err)
+	}
+
 	return user, err
 }
 
@@ -124,16 +149,34 @@ func (r *mutationResolver) UpdatePassword(ctx context.Context, id string, passwo
 }
 
 // DELETE is the resolver for the deleteUser field.
-func (r *mutationResolver) DeleteUser(ctx context.Context, id string, token string) (bool, error) {
-	// TODO: Add auth middleware to confirm user.
-	userId, err := strconv.Atoi(id)
+func (r *mutationResolver) DeleteUser(ctx context.Context, email string, token string) (bool, error) {
+	// Get user ID from the token
+	userId, err := middleware.GetUserIDFromToken(token)
 	if err != nil {
-		return false, fmt.Errorf("error converting id to int type: %v", err)
+		return false, fmt.Errorf("error getting user ID from token: %v", err)
+	} else {
+		fmt.Printf("got id from token: %v", userId)
 	}
 
-	deleted, err := r.userService.DeleteUser(ctx, userId)
+	// getting user by email.
+	user, err := r.userService.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, fmt.Errorf("error : getting user by email: %v", err)
+	}
 
-	return deleted, err
+	// Check if the stored token matches the given token
+	if user.Token != token {
+		return false, fmt.Errorf("unaithorized: token is expired")
+	}
+
+	// Call the service to delete the user
+	deleted, err := r.userService.DeleteUser(ctx, userId)
+	if err != nil {
+		return false, fmt.Errorf("could not delete user: %v", err)
+	}
+
+	// Return the result of deletion
+	return deleted, nil
 }
 
 // Getting a user by Id.
@@ -187,7 +230,7 @@ func (r *queryResolver) Users(ctx context.Context, limit *int, offset *int) ([]*
 	// panic(fmt.Errorf("not implemented: Users - users"))
 }
 
-// Getting the cont of all the users
+// Getting the count of all the users
 func (r *queryResolver) UsersCount(ctx context.Context) (int, error) {
 	count, err := r.userService.GetUsersCount(ctx)
 	if err != nil {
@@ -203,11 +246,6 @@ func (r *userResolver) ID(ctx context.Context, obj *services.User) (string, erro
 		return "", fmt.Errorf("user object is nil")
 	}
 	return strconv.Itoa(obj.ID), nil
-}
-
-// Token is the resolver for the token field.
-func (r *userResolver) Token(ctx context.Context, obj *services.User) (*string, error) {
-	panic(fmt.Errorf("not implemented: Token - token"))
 }
 
 // Token is the resolver for the token field.
@@ -233,17 +271,3 @@ type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
 type updateUserInputResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func NewResolver(userService *services.UserService) *Resolver {
-	return &Resolver{
-		userService: userService,
-	}
-}
-*/
