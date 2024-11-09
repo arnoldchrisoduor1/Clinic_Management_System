@@ -7,22 +7,23 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"time"
 )
 
 // Role represents the role model
 type Role struct {
-	ID          int             `json:"id"`
-	Name        string          `json:"name"`
-	Permissions json.RawMessage `json:"permissions"`
-	CreatedAt   time.Time       `json:"createdAt"`
-	UpdatedAt   time.Time       `json:"updatedAt"`
+    ID          int                    `json:"id"`
+    Name        string                 `json:"name"`
+    Permissions map[string]interface{} `json:"permissions"`  // Changed to map for compatibility with gqlgen
+    CreatedAt   time.Time              `json:"createdAt"`
+    UpdatedAt   time.Time              `json:"updatedAt"`
 }
 
-// RoleInput represents the input for creating/updating a role
 type RoleInput struct {
-	Name        string          `json:"name"`
-	Permissions json.RawMessage `json:"permissions"`
+    Name        string                 `json:"name"`
+    Permissions map[string]interface{} `json:"permissions"`  // Changed to map for compatibility with gqlgen
 }
 
 // RoleService handles role-related business logic
@@ -37,25 +38,41 @@ func NewRoleService(db *sql.DB) *RoleService {
 
 // CreateRole creates a new role
 func (s *RoleService) CreateRole(ctx context.Context, input RoleInput) (*Role, error) {
-	var role Role
+    var role Role
+    var permissionsBytes []byte
 
-	err := s.db.QueryRowContext(ctx,
-		`SELECT * FROM create_role($1, $2)`,
-		input.Name,
-		input.Permissions,
-	).Scan(
-		&role.ID,
-		&role.Name,
-		&role.Permissions,
-		&role.CreatedAt,
-		&role.UpdatedAt,
-	)
+    // Serialize the permissions map to JSON
+    permissionsJSON, err := json.Marshal(input.Permissions)
+    if err != nil {
+        log.Printf("Error serializing permissions: %v", err)
+        return nil, err
+    }
 
-	if err != nil {
-		return nil, err
-	}
+    // Execute the query with serialized permissions
+    err = s.db.QueryRowContext(ctx,
+        `SELECT * FROM create_role($1, $2)`,
+        input.Name,
+        permissionsJSON,
+    ).Scan(
+        &role.ID,
+        &role.Name,
+        &permissionsBytes, // Scan into []byte first
+        &role.CreatedAt,
+        &role.UpdatedAt,
+    )
 
-	return &role, nil
+    if err != nil {
+        log.Printf("Error executing query: %v", err)
+        return nil, fmt.Errorf("could not add role to db: %w", err)
+    }
+
+    // Unmarshal the permissions bytes into the map
+    if err := json.Unmarshal(permissionsBytes, &role.Permissions); err != nil {
+        log.Printf("Error unmarshaling permissions: %v", err)
+        return nil, fmt.Errorf("could not unmarshal permissions: %w", err)
+    }
+
+    return &role, nil
 }
 
 // GetRoleByID retrieves a role by its ID

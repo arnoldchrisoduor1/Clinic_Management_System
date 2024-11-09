@@ -16,7 +16,7 @@ resolver:
   filename_template: "{name}.resolvers.go"
 
 autobind:
-  - "HealthCareSystem/services" 
+  - "HealthCareSystem/services"
 
 models:
   ID:
@@ -33,6 +33,9 @@ models:
   DateTime:
     model:
       - github.com/99designs/gqlgen/graphql.Time
+  JSON:
+    model:
+      - HealthCareSystem/graphql/model.JSON  # Use json.RawMessage for JSON fields
   User:
     model: "HealthCareSystem/services.User"
     fields:
@@ -40,6 +43,3 @@ models:
         resolver: true
   UserRole:
     model: "HealthCareSystem/services.UserRole"
-
-# run : go get -u github.com/99designs/gqlgen
-# then run: go get -u github.com/99designs/gqlgen

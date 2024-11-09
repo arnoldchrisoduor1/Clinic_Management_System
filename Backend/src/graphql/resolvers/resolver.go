@@ -10,4 +10,12 @@ import (
 
 type Resolver struct{
 	userService *services.UserService
+	RoleService *services.RoleService
+}
+
+func NewResolver(userService *services.UserService, roleService *services.RoleService) *Resolver {
+	return &Resolver{
+		userService: userService,
+		RoleService: roleService,
+	}
 }

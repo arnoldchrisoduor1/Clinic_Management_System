@@ -118,15 +118,17 @@ func main() {
 	defer db.Close()
 
 	// Initialize services
-	userService := services.NewUserService(db)
+	// Create user and role services
+userService := services.NewUserService(db)
+roleService := services.NewRoleService(db)
 
-	// Initialize resolver
-	resolver := resolvers.NewResolver(userService)
+// Initialize resolver with both services
+resolver := resolvers.NewResolver(userService, roleService)
 
-	// Create GraphQL server
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
-		Resolvers: resolver,
-	}))
+// Create GraphQL server
+srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
+	Resolvers: resolver,
+}))
 
 	// Setup router
 	router := setupRouter()

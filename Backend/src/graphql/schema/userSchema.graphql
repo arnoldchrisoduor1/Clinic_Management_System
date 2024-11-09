@@ -45,6 +45,14 @@ input UpdateUserInput {
   otherDetails: JSON
 }
 
+type Role {
+  id: ID!
+  name: String!
+  permissions: JSON!
+  createdAt: String!
+  updatedAt: String!
+}
+
 enum UserRole {
   admin
   patient
@@ -61,6 +69,12 @@ type Query {
   userByEmail(email: String!): User
   users(limit: Int = 10, offset: Int = 0): [User!]!
   usersCount: Int!
+
+
+  getRoleById(id: ID!): Role
+  getRoleByName(name: String!): Role
+  getAllRoles: [Role!]!
+  roleExistsByName(name: String!): Boolean!
 }
 
 type Mutation {
@@ -71,4 +85,9 @@ type Mutation {
   updatePassword(id: ID!, password: String!, token: String!): Boolean!
   verifyUser(email: String!, verificationToken: Int!): User!
   deleteUser(email: String!, token: String!): Boolean!
+
+
+  createRole(name: String!, permissions: JSON!): Role!
+  updateRole(id: ID!, name: String, permissions: JSON): Role
+  deleteRole(id: ID!): Boolean!
 }

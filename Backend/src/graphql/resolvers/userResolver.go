@@ -13,11 +13,11 @@ import (
 // 	userService *services.UserService
 // }
 
-func NewResolver(userService *services.UserService) *Resolver {
-	return &Resolver{
-		userService: userService,
-	}
-}
+// func NewResolver(userService *services.UserService) *Resolver {
+// 	return &Resolver{
+// 		userService: userService,
+// 	}
+// }
 
 // Query Resolvers
 
