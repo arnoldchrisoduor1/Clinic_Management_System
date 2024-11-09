@@ -1,0 +1,31 @@
+func connectDB(config DatabaseConfig) (*sql.DB, error) {
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		config.Host,
+		config.Port,
+		config.User,
+		config.Password,
+		config.DBName,
+	)
+
+	// Set connection timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		return nil, fmt.Errorf("error opening database: %v", err)
+	}
+
+	// Test the connection with timeout
+	if err := db.PingContext(ctx); err != nil {
+		return nil, fmt.Errorf("error connecting to the database: %v", err)
+	}
+
+	// Set connection pool settings
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	log.Println("Successfully connected to database")
+	return db, nil
+}

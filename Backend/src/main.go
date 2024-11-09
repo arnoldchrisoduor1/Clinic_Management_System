@@ -1,5 +1,3 @@
-// cmd/server/main.go
-
 package main
 
 import (
@@ -17,10 +15,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	_ "github.com/lib/pq"
-	
-	// "HealthCareSystem/graphql/generated"
-	"HealthCareSystem/graphql/resolvers"
+
 	"HealthCareSystem/graphql/generated"
+	"HealthCareSystem/graphql/resolvers"
 	"HealthCareSystem/services"
 )
 
@@ -108,6 +105,7 @@ func setupRouter() *chi.Mux {
 	return router
 }
 
+
 func main() {
 	// Get database configuration
 	dbConfig := getDatabaseConfig()
@@ -161,7 +159,7 @@ func main() {
 
 	log.Printf("Server starting on http://localhost%s/", serverAddr)
 	log.Printf("GraphQL playground available at http://localhost%s/", serverAddr)
-	
+
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal("Server error:", err)
 	}

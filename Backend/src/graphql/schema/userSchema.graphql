@@ -1,4 +1,5 @@
 scalar Time
+scalar JSON
 
 type User {
   id: ID!
@@ -7,9 +8,17 @@ type User {
   phone: String!
   role: UserRole!
   isActive: Boolean!
+  token: String
+  isVerified: Boolean!
+  idNumber: Float
+  lastLogin: Time!
+  resetPasswordToken: String
+  resetPasswordExpiresAt: Time
+  verificationToken: Int
+  verificationTokenExpiresAt: Time
+  otherDetails: JSON
   createdAt: Time!
   updatedAt: Time!
-  token: String
 }
 
 input CreateUserInput {
@@ -32,6 +41,8 @@ input UpdateUserInput {
   role: UserRole
   isActive: Boolean
   token: String
+  idNumber: Float
+  otherDetails: JSON
 }
 
 enum UserRole {
@@ -56,6 +67,8 @@ type Mutation {
   createUser(input: CreateUserInput!): User!
   signInUser(input: SignInInput!): User!
   updateUser(id: ID!, input: UpdateUserInput!): User!
+  resetPassword(email: String!): Boolean!
   updatePassword(id: ID!, password: String!, token: String!): Boolean!
+  verifyUser(email: String!, verificationToken: Int!): User!
   deleteUser(email: String!, token: String!): Boolean!
 }

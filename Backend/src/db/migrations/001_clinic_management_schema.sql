@@ -26,10 +26,20 @@ CREATE TABLE users (
     phone VARCHAR(20),
     role user_role NOT NULL,
     is_active BOOLEAN DEFAULT true,
-    token VARCHAR(255),
+    token VARCHAR(255) DEFAULT 'STRING',
+    is_verified BOOLEAN DEFAULT false,
+    id_number NUMERIC UNIQUE,
+    last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    reset_password_token VARCHAR(255) DEFAULT 'STRING', 
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    verification_token VARCHAR(255) DEFAULT '0',
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    other_details JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+
 
 CREATE TABLE patients (
     id SERIAL PRIMARY KEY,

@@ -1,6 +1,3 @@
--- Name: users/queries.sql
--- Description: CRUD operations for users table
-
 -- Create a new user
 CREATE OR REPLACE FUNCTION create_user(
     p_username VARCHAR(50),
@@ -8,21 +5,41 @@ CREATE OR REPLACE FUNCTION create_user(
     p_email VARCHAR(255),
     p_phone VARCHAR(20),
     p_role user_role
-) RETURNS TABLE (
+)
+RETURNS TABLE (
     id INTEGER,
     username VARCHAR(50),
     email VARCHAR(255),
     phone VARCHAR(20),
     role user_role,
     is_active BOOLEAN,
+    is_verified BOOLEAN,
+    id_number NUMERIC,
+    last_login TIMESTAMP WITH TIME ZONE,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE,
+    other_details JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
-    INSERT INTO users (username, password_hash, email, phone, role)
-    VALUES (p_username, p_password_hash, p_email, p_phone, p_role)
-    RETURNING users.id, users.username, users.email, users.phone, users.role, users.is_active, users.created_at, users.updated_at;
+    INSERT INTO users (
+        username, password_hash, email, phone, role,
+        last_login
+    )
+    VALUES (
+        p_username, p_password_hash, p_email, p_phone, p_role,
+        CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
+    )
+    RETURNING
+        users.id, users.username, users.email, users.phone, users.role, users.is_active,
+        users.is_verified, users.id_number, users.last_login, users.reset_password_token,
+        users.reset_password_expires_at, users.verification_token, users.verification_token_expires_at,
+        users.other_details, users.created_at, users.updated_at;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -36,13 +53,24 @@ RETURNS TABLE (
     role user_role,
     is_active BOOLEAN,
     token VARCHAR(255),
+    is_verified BOOLEAN,
+    id_number NUMERIC,
+    last_login TIMESTAMP WITH TIME ZONE,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE,
+    other_details JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        users.id, users.username, users.email, users.token, users.phone, users.role, users.is_active, users.created_at, users.updated_at
+        users.id, users.username, users.email, users.phone, users.role, users.is_active, users.token,
+        users.is_verified, users.id_number, users.last_login, users.reset_password_token, users.reset_password_expires_at,
+        users.verification_token, users.verification_token_expires_at, users.other_details, users.created_at, users.updated_at
     FROM users 
     WHERE users.id = p_id;
 END;
@@ -59,9 +87,18 @@ RETURNS TABLE (
     role user_role,
     is_active BOOLEAN,
     token VARCHAR(255),
+    is_verified BOOLEAN,
+    id_number NUMERIC,
+    last_login TIMESTAMP WITH TIME ZONE,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE,
+    other_details JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
     SELECT * FROM users WHERE users.email = p_email;
@@ -79,9 +116,18 @@ RETURNS TABLE (
     role user_role,
     is_active BOOLEAN,
     token VARCHAR(255),
+    is_verified BOOLEAN,
+    id_number NUMERIC,
+    last_login TIMESTAMP WITH TIME ZONE,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE,
+    other_details JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
     SELECT * FROM users WHERE users.username = p_username;
@@ -92,7 +138,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION get_all_users(
     p_limit INTEGER DEFAULT 10,
     p_offset INTEGER DEFAULT 0
-) RETURNS TABLE (
+)
+RETURNS TABLE (
     id INTEGER,
     username VARCHAR(50),
     email VARCHAR(255),
@@ -100,9 +147,18 @@ CREATE OR REPLACE FUNCTION get_all_users(
     role user_role,
     is_active BOOLEAN,
     token VARCHAR(255),
+    is_verified BOOLEAN,
+    id_number NUMERIC,
+    last_login TIMESTAMP WITH TIME ZONE,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE,
+    other_details JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
     SELECT 
@@ -111,8 +167,16 @@ BEGIN
         users.email,
         users.phone,
         users.role,
-        users.is_active,  
-        users.token,      
+        users.is_active,
+        users.token,
+        users.is_verified,
+        users.id_number,
+        users.last_login,
+        users.reset_password_token,
+        users.reset_password_expires_at,
+        users.verification_token,
+        users.verification_token_expires_at,
+        users.other_details,
         users.created_at,
         users.updated_at
     FROM users
@@ -129,8 +193,16 @@ CREATE OR REPLACE FUNCTION update_user(
     p_email VARCHAR(255) DEFAULT NULL,
     p_phone VARCHAR(20) DEFAULT NULL,
     p_role user_role DEFAULT NULL,
-    p_is_active BOOLEAN DEFAULT NULL
-) RETURNS TABLE (
+    p_is_active BOOLEAN DEFAULT NULL,
+    p_id_number NUMERIC DEFAULT NULL,
+    p_other_details JSONB DEFAULT NULL,
+    p_is_verified BOOLEAN DEFAULT NULL,
+    p_reset_password_token VARCHAR(255) DEFAULT NULL,
+    p_reset_password_expires_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    p_verification_token VARCHAR(255) DEFAULT NULL,
+    p_verification_token_expires_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
+)
+RETURNS TABLE (
     id INTEGER,
     username VARCHAR(50),
     email VARCHAR(255),
@@ -138,9 +210,18 @@ CREATE OR REPLACE FUNCTION update_user(
     role user_role,
     is_active BOOLEAN,
     token VARCHAR(255),
+    is_verified BOOLEAN,
+    id_number NUMERIC,
+    last_login TIMESTAMP WITH TIME ZONE,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE,
+    other_details JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
     UPDATE users u
@@ -149,9 +230,19 @@ BEGIN
         email = COALESCE(p_email, u.email),
         phone = COALESCE(p_phone, u.phone),
         role = COALESCE(p_role, u.role),
-        is_active = COALESCE(p_is_active, u.is_active)
+        is_active = COALESCE(p_is_active, u.is_active),
+        id_number = COALESCE(p_id_number, u.id_number),
+        other_details = COALESCE(p_other_details, u.other_details),
+        is_verified = COALESCE(p_is_verified, u.is_verified),
+        reset_password_token = COALESCE(p_reset_password_token, u.reset_password_token),
+        reset_password_expires_at = COALESCE(p_reset_password_expires_at, u.reset_password_expires_at),
+        verification_token = COALESCE(p_verification_token, u.verification_token),
+        verification_token_expires_at = COALESCE(p_verification_token_expires_at, u.verification_token_expires_at)
     WHERE u.id = p_id
-    RETURNING u.id, u.username, u.email, u.phone, u.role, u.is_active, u.created_at, u.updated_at, u.token;
+    RETURNING 
+        u.id, u.username, u.email, u.phone, u.role, u.is_active, u.token, u.is_verified, u.id_number, u.last_login,
+        u.reset_password_token, u.reset_password_expires_at, u.verification_token, u.verification_token_expires_at, u.other_details,
+        u.created_at, u.updated_at;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -159,7 +250,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_user_password(
     p_id INTEGER,
     p_password_hash VARCHAR(255)
-) RETURNS BOOLEAN AS $$
+)
+RETURNS BOOLEAN AS $$
 DECLARE
     rows_updated INTEGER;
 BEGIN
@@ -193,7 +285,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION user_exists(
     p_username VARCHAR(50) DEFAULT NULL,
     p_email VARCHAR(255) DEFAULT NULL
-) RETURNS BOOLEAN AS $$
+)
+RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (
         SELECT 1 FROM users 
@@ -211,12 +304,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
--- Update userToken
+-- Update user token
 CREATE OR REPLACE FUNCTION update_user_token(
     p_id INTEGER,
     p_token VARCHAR(255)
-) RETURNS TABLE (
+)
+RETURNS TABLE (
     id INTEGER,
     username VARCHAR(50),
     email VARCHAR(255),
@@ -224,15 +317,27 @@ CREATE OR REPLACE FUNCTION update_user_token(
     role user_role,
     is_active BOOLEAN,
     token VARCHAR(255),
+    is_verified BOOLEAN,
+    id_number NUMERIC,
+    last_login TIMESTAMP WITH TIME ZONE,
+    reset_password_token VARCHAR(255),
+    reset_password_expires_at TIMESTAMP WITH TIME ZONE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP WITH TIME ZONE,
+    other_details JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $$
+)
+AS $$
 BEGIN
     RETURN QUERY
     UPDATE users u
     SET
         token = COALESCE(p_token, u.token)
     WHERE u.id = p_id
-    RETURNING u.id, u.username, u.email, u.phone, u.role, u.is_active, u.token, u.created_at, u.updated_at;
+    RETURNING 
+        u.id, u.username, u.email, u.phone, u.role, u.is_active, u.token, u.is_verified, u.id_number, u.last_login,
+        u.reset_password_token, u.reset_password_expires_at, u.verification_token, u.verification_token_expires_at, u.other_details,
+        u.created_at, u.updated_at;
 END;
 $$ LANGUAGE plpgsql;
